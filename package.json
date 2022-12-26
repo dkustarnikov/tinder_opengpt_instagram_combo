@@ -1,0 +1,18 @@
+{
+  "name": "tinder_opengpt_instagram_combo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "module": "main.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Dmitry",
+  "license": "ISC",
+  "dependencies": {
+    "esm": "^3.2.25",
+    "instagram-private-api": "^1.45.3",
+    "openai": "^3.1.0",
+    "tinder-api-js": "^1.0.13"
+  }
+}
