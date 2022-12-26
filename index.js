@@ -119,7 +119,7 @@ async function getGirlsIntagramHandle(mainTinderInfo, ig) {
         mainTinderInfo.name +
         '. This is her bio on tinder: "' +
         mainTinderInfo.bio +
-        '". Make sure to mention that I found her on tinder and I am dming her on Instagram. Include profanity';
+        '". Make sure to mention that I found her on tinder and I am dming her on Instagram. Be witty.';
 
       const response = await openai.createCompletion({
         model: "text-davinci-003",
