@@ -64,50 +64,15 @@ async function runTheWholeThing() {
 
   var tinderResults = await loginToTinder();
 
-  tinderResults.forEach(async (result) => {
+  for (result of tinderResults) {
     var mainTinderInfo = {
       bio: result.bio,
       name: result.name,
       id: result._id,
     };
 
-    var instagramHandle = await getGirlsIntagramHandle(mainTinderInfo);
-
-    if (instagramHandle.length != 0) {
-      var messageToSend = await createOpeningLine(mainTinderInfo);
-      var sent = await sendInstagramDm(instagramHandle, messageToSend, ig);
-      //Here we 'pass her' because we want to see more.
-      await tinderApi.feeling.pass(mainTinderInfo.id);
-    } else {
-      //   console.log(
-      //     mainTinderInfo.name +
-      //       " doesn't have an instagram handle. We are not wasting our time."
-      //   );
-    }
-
-    // var chatGPTResponse = await getChatGPTAnswer(result);
-  });
-
-  //   await sendInstagramDm("mitya.photos");
-}
-
-async function createOpeningLine(mainTinderInfo) {
-  var openAiRequest =
-    "Create an opening line to a girl named " +
-    mainTinderInfo.name +
-    '. This is her bio on tinder: "' +
-    mainTinderInfo.bio +
-    '". Make sure to mention that I found her on tinder and I am dming her on Instagram';
-
-  const response = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: openAiRequest,
-    max_tokens: 64,
-    temperature: 0.0,
-  });
-
-  var messageToSend = response.data.choices[0].text;
-  return messageToSend;
+    var instagramHandle = await getGirlsIntagramHandle(mainTinderInfo, ig);
+  }
 }
 
 async function sendInstagramDm(username, messageToSend, ig) {
@@ -115,16 +80,8 @@ async function sendInstagramDm(username, messageToSend, ig) {
   var userId;
   try {
     userId = await ig.user.getIdByUsername(username);
-    console.log(`Found a girl with handle ${username}`);
-
     const thread = ig.entity.directThread([userId.toString()]);
-    var broatcasted = await thread.broadcastText(
-      // "It was supposed to send it to " +
-      //   username +
-      //   ". This is the message to send: \n" +
-      //   messageToSend
-      messageToSend
-    );
+    var broadcasted = await thread.broadcastText(messageToSend);
   } catch (e) {
     console.log(e);
   }
@@ -140,12 +97,12 @@ async function askForInstagramHandle(mainTinderInfo) {
     model: "text-davinci-003",
     prompt: openAiRequest,
     max_tokens: 64,
-    temperature: 0.7,
+    temperature: 0.0,
   });
-  return await response.data.choices[0].text;
+  return response.data.choices[0].text;
 }
 
-async function getGirlsIntagramHandle(mainTinderInfo) {
+async function getGirlsIntagramHandle(mainTinderInfo, ig) {
   var handleResponse = await askForInstagramHandle(mainTinderInfo);
 
   if (handleResponse.includes('"')) {
@@ -155,9 +112,37 @@ async function getGirlsIntagramHandle(mainTinderInfo) {
     );
     console.log("This girl's instagram handle is " + instagramHandle);
     console.log("Her bio is: " + mainTinderInfo.bio);
-    console.log(
-      "\n\n-------------------------------------------------------------------\n\n"
-    );
+
+    if (instagramHandle.length != 0) {
+      var openAiRequest =
+        "Create an opening line to a girl named " +
+        mainTinderInfo.name +
+        '. This is her bio on tinder: "' +
+        mainTinderInfo.bio +
+        '". Make sure to mention that I found her on tinder and I am dming her on Instagram. Include profanity';
+
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: openAiRequest,
+        max_tokens: 64,
+        temperature: 0.99,
+      });
+
+      var messageToSend = response.data.choices[0].text;
+      messageToSend = messageToSend.substring(4);
+
+      console.log("Message it sent her: " + messageToSend);
+
+      console.log(
+        "\n\n-------------------------------------------------------------------\n\n"
+      );
+
+      var sent = await sendInstagramDm(instagramHandle, messageToSend, ig);
+      //Here we 'pass her' because we want to see more.
+      await tinderApi.feeling.pass(mainTinderInfo.id);
+    } else {
+    }
+
     return instagramHandle;
   } else {
     console.log(
